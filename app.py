@@ -83,12 +83,13 @@ def generar_pdf():
 def generar_perfil():
     try:
         data = request.json
+        print(">> Datos recibidos en /generar-pdf:", data)
         doc = DocxTemplate("templates/Perfil_Trabajo_Titulacion.docx")
 
         contexto = data.copy()
         contexto['ods'] = data.get('ods', [])
         contexto['bibliografia'] = data.get('bibliografia', [])
-        print("Contexto recibido en generar_pdf:", contexto)
+        
 
         doc.render(contexto)
         doc_path = "perfil_trabajo.docx"
