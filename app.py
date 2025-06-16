@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file
 from docxtpl import DocxTemplate
 import cloudconvert
+import requests
 import os
 import requests
 
@@ -54,8 +55,10 @@ def generar_pdf():
         upload_params = upload_task['result']['form']['parameters']
 
         with open(doc_path, 'rb') as f:
-            files = {'file': (doc_path, f)}
-            cloudconvert.helpers.perform_upload(upload_url, upload_params, files)
+            upload_data = upload_params.copy()
+            upload_data['file'] = f
+            response = requests.post(upload_url, data=upload_data, files={'file': f})
+            
 
         # Esperar a que finalice el trabajo y obtener la URL del PDF
         job = cloudconvert.Job.wait(id=job['id'])

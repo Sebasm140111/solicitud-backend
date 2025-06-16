@@ -1,6 +1,5 @@
-Flask
-docxtpl
-python-docx
+requests
 cloudconvert
-
+docxtpl
+Flask
 
