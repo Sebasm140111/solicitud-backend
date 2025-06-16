@@ -18,10 +18,11 @@ def generar_doc():
         doc = DocxTemplate("templates/2_Solicitud_fecha_de_defensa_final.docx")
         contexto = {
             "fecha": data.get("fecha", ""),
-            "TITULO DEL TRABAJO DE TITULACION": data.get("titulo", ""),
-            "NOMBRE/S DE ESTUDIANTE/S": data.get("nombres_estudiantes", ""),
-            "nombres completos director": data.get("nombre_director", "")
+            "titulo": data.get("titulo", ""),
+            "nombres_estudiantes": data.get("nombres_estudiantes", ""),
+            "nombre_director": data.get("nombre_director", "")
         }
+
 
         print("Contexto:", contexto)
 
