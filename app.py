@@ -25,3 +25,8 @@ def generar_doc():
     doc.save(output_path)
 
     return send_file(output_path, as_attachment=True)
+
+# ESTA PARTE ES CLAVE 👇
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico
+    app.run(host='0.0.0.0', port=port)
