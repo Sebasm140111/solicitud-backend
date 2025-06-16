@@ -88,6 +88,7 @@ def generar_perfil():
         contexto = data.copy()
         contexto['ods'] = data.get('ods', [])
         contexto['bibliografia'] = data.get('bibliografia', [])
+        print("Contexto recibido en generar_pdf:", contexto)
 
         doc.render(contexto)
         doc_path = "perfil_trabajo.docx"
