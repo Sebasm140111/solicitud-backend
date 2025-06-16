@@ -12,13 +12,18 @@ def home():
 @app.route('/generar-doc', methods=['POST'])
 def generar_doc():
     try:
+        data = request.json
+        print("Datos recibidos:", data)
+
         doc = DocxTemplate("templates/2_Solicitud_fecha_de_defensa_final.docx")
         contexto = {
-            "fecha": "16 de junio de 2025",
-            "titulo": "Sistema de gestión académica",
-            "nombres_estudiantes": "Juan Pérez",
-            "nombre_director": "Ing. Carlos Ruiz"
+            "fecha": data.get("fecha", ""),
+            "titulo": data.get("titulo", ""),
+            "nombres_estudiantes": data.get("nombres_estudiantes", ""),
+            "nombre_director": data.get("nombre_director", "")
         }
+        print("Contexto generado:", contexto)
+
         doc.render(contexto)
         output_path = "solicitud_generada.docx"
         doc.save(output_path)
