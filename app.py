@@ -57,12 +57,16 @@ def convertir_a_pdf(nombre_docx, nombre_pdf):
 @app.route('/generar-pdf', methods=['POST'])
 def generar_pdf():
     try:
-        data = request.get_json()
-        if not data:
-            raise Exception("❌ No se recibió un JSON válido en la solicitud.")
+        if not request.is_json:
+            raise Exception("❌ La solicitud no contiene JSON.")
+
+        data = request.get_json(force=True)
+        if not isinstance(data, dict):
+            raise Exception("❌ El JSON recibido no es un diccionario.")
 
         print("==========================")
         print(">> Datos recibidos en /generar-pdf:", data)
+
 
         doc = DocxTemplate("templates/2_Solicitud_fecha_de_defensa_final.docx")
         contexto = {
