@@ -161,8 +161,6 @@ def generar_examen_complexivo():
             "version": data.get("version", "1"),
             "actualizado_si_existe": data.get("actualizado_si_existe", ""),
             "fecha_actualizacion_si_existe": data.get("fecha_actualizacion_si_existe", ""),
-            "Nombre_completo": data.get("Nombre_completo", ""),
-            "cédula": data.get("cédula", "")
         }
 
         doc.render(contexto)
