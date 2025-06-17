@@ -5,13 +5,14 @@ import os
 import requests
 
 app = Flask(__name__)
-cloudconvert.configure(api_key='TU_API_KEY')  # Reemplaza con tu API Key real
+cloudconvert.configure(api_key='TU_API_KEY')  # Reemplaza con tu clave real
 
 @app.route('/')
 def home():
-    return 'API de generación de solicitud funcionando'
+    return '✅ API de generación de documentos funcionando correctamente'
 
 def convertir_a_pdf(nombre_docx, nombre_pdf):
+    print(f"⏳ Convertir: {nombre_docx} -> {nombre_pdf}")
     job = cloudconvert.Job.create(payload={
         "tasks": {
             "import-my-file": {"operation": "import/upload"},
@@ -30,13 +31,7 @@ def convertir_a_pdf(nombre_docx, nombre_pdf):
     })
 
     job = job.get('data') if isinstance(job, dict) else job
-    if 'tasks' not in job:
-        raise Exception("Respuesta inesperada de CloudConvert")
-
-    upload_task = next((task for task in job['tasks'] if task['name'] == 'import-my-file'), None)
-    if not upload_task or 'result' not in upload_task:
-        raise Exception("No se pudo obtener el formulario de subida")
-
+    upload_task = next((t for t in job['tasks'] if t['name'] == 'import-my-file'), None)
     upload_url = upload_task['result']['form']['url']
     upload_params = upload_task['result']['form']['parameters']
 
@@ -44,53 +39,48 @@ def convertir_a_pdf(nombre_docx, nombre_pdf):
         requests.post(upload_url, data=upload_params, files={'file': f})
 
     job = cloudconvert.Job.wait(id=job['id'])
-
-    export_task = next((task for task in job['tasks'] if task['name'] == 'export-my-file'), None)
-    if not export_task or 'result' not in export_task:
-        raise Exception("No se pudo obtener el archivo exportado")
-
+    export_task = next((t for t in job['tasks'] if t['name'] == 'export-my-file'), None)
     file_url = export_task['result']['files'][0]['url']
     response = requests.get(file_url)
+
     with open(nombre_pdf, "wb") as f:
         f.write(response.content)
+    print("✅ Conversión exitosa")
 
 @app.route('/generar-pdf', methods=['POST'])
 def generar_pdf():
     try:
         if not request.is_json:
-            raise Exception("❌ La solicitud no contiene JSON válido")
+            raise Exception("❌ El cuerpo no contiene JSON válido")
 
         data = request.get_json(force=True)
-        if not isinstance(data, dict):
-            raise Exception("❌ El cuerpo JSON no es un diccionario válido")
+        print("📥 Datos recibidos:", data)
 
-        print("✅ JSON recibido en /generar-pdf:", data)
+        required = ["fecha", "titulo", "nombres_estudiantes", "nombre_director"]
+        for campo in required:
+            if campo not in data or not data[campo]:
+                raise Exception(f"❌ Campo faltante o vacío: {campo}")
 
-        required_fields = ["fecha", "titulo", "nombres_estudiantes", "nombre_director"]
-        for campo in required_fields:
-            if campo not in data or not isinstance(data[campo], str):
-                raise Exception(f"❌ Falta o es inválido el campo: {campo}")
-
-        contexto = {k: data[k] for k in required_fields}
-        print("📦 Contexto:", contexto)
+        contexto = {campo: data[campo] for campo in required}
+        print("📦 Contexto para el DOCX:", contexto)
 
         doc = DocxTemplate("templates/test_formato_simple.docx")
         doc.render(contexto)
         doc.save("documento.docx")
+        print("📝 Documento .docx generado")
 
         convertir_a_pdf("documento.docx", "documento.pdf")
         return send_file("documento.pdf", as_attachment=True)
 
     except Exception as e:
-        print("❌ ERROR:", str(e))
+        print("❌ ERROR en /generar-pdf:", str(e))
         return f"Error: {e}", 500
-
 
 @app.route('/generar-perfil', methods=['POST'])
 def generar_perfil():
     try:
         data = request.get_json()
-        print("📥 Datos recibidos:", data)
+        print("📥 Datos recibidos en /generar-perfil:", data)
 
         contexto = {
             "facultad": data.get("facultad", ""),
@@ -111,29 +101,25 @@ def generar_perfil():
             "objetivo_general": data.get("objetivo_general", ""),
             "linea_de_investigacion": data.get("linea_de_investigacion", ""),
             "programa": data.get("programa", ""),
-            "ods": data.get("ods", []),  # lista de enteros
+            "ods": data.get("ods", []),
             "problema": data.get("problema", ""),
             "metodo_de_metodologia": data.get("metodo_de_metodologia", ""),
             "tecnica": data.get("tecnica", ""),
             "instrumentos": data.get("instrumentos", ""),
-            "bibliografia": data.get("bibliografia", []),  # lista de strings
+            "bibliografia": data.get("bibliografia", []),
             "firma_estudiante": data.get("firma_estudiante", ""),
             "firma_director": data.get("firma_director", "")
         }
 
-        print("📦 Contexto generado:", contexto)
-
         doc = DocxTemplate("templates/Perfil_Trabajo_Titulacion.docx")
         doc.render(contexto)
-        doc_path = "perfil_trabajo.docx"
-        pdf_path = "perfil_trabajo.pdf"
-        doc.save(doc_path)
+        doc.save("perfil_trabajo.docx")
 
-        convertir_a_pdf(doc_path, pdf_path)
-        return send_file(pdf_path, as_attachment=True)
+        convertir_a_pdf("perfil_trabajo.docx", "perfil_trabajo.pdf")
+        return send_file("perfil_trabajo.pdf", as_attachment=True)
 
     except Exception as e:
-        print("❌ ERROR AL GENERAR PERFIL:", str(e))
+        print("❌ ERROR en /generar-perfil:", str(e))
         return f"Error: {e}", 500
 
 if __name__ == '__main__':
