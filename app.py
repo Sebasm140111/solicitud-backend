@@ -5,7 +5,7 @@ import os
 import requests
 
 app = Flask(__name__)
-cloudconvert.configure(api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOThiYzBhYjg4ODkwZWI5ODczZDNjYzcwNjU3NjgwYjlkZjc4MjlhY2Y2NWYzMGNiZjI5OGY2NzQyYTUyYzA0Nzg1ZjE2MDI1MDVlNTRiNmEiLCJpYXQiOjE3NTAxMTI5NzAuOTE5OTM0LCJuYmYiOjE3NTAxMTI5NzAuOTE5OTM1LCJleHAiOjQ5MDU3ODY1NzAuOTE0NjA4LCJzdWIiOiI3MjIyMjEwNiIsInNjb3BlcyI6WyJ1c2VyLnJlYWQiLCJ1c2VyLndyaXRlIiwidGFzay5yZWFkIiwidGFzay53cml0ZSIsIndlYmhvb2sucmVhZCIsIndlYmhvb2sud3JpdGUiLCJwcmVzZXQucmVhZCIsInByZXNldC53cml0ZSJdfQ.Bl91cayJ9svh1O7RPdgV7BeyUrDwBEE0JmwJeebZT-ecR1QPqHSlW6NiD5OOyJY4S7lthUZNLnKtxPRjsFyHuxV5Zi-pNQZakOEjK4Tm_tbGzr35Tk-crcNWOt48avn0hgCtI13s8U8oBbjLMzu4vW0vMMzZTKCEVa0vJl6DTsB5Vp14SnxxoX2HF5-XBLzT1uu76THXu3QrVxxNjAlSlXH2aH0_BSI0zgEFqzWy3iySLBYVqs9cY5d3tpoYbAGKX0CfGszSK-6YiAJPeTCA1Qm6kjM0I-nwB7XDH4tIbiHNgn4zGk4_yBowm53A3IwCAT-GX03Z25vl0hkBtvuXLPOSROsBXd1q-ds4Wm_-BMX1I411ABDkNxNKJGe9in6sw62R4maXPaGT-NNl7PXDDqfXfAtAuQkXWPQJiuj6onLaNXlks1o6dTQE-dbYfOufQy-4doiBSQL4vfaKfBpRdPCHslclgoogJ5n4e1XAsWgkqAiRHg9xYefqAfrgxTiqWWSV5XsjZQs7ylMK4zku9gQIj1esRdYiVzoXlynSR64due3k9mADVTD3zMYKzfvOgMBtJuOXzvz5mI4QaGVVLWKYpf0ecZ1DGE768WzOxgnki2XXYOLqHliMNJDa7PpW7SXIeYuOEDTAOO7UHHhT5hkCl2NkwJTgLX7KhqHjz04')  # Reemplaza con tu API Key real
+cloudconvert.configure(api_key='TU_API_KEY')  # Reemplaza con tu API Key real
 
 @app.route('/')
 def home():
@@ -58,7 +58,9 @@ def convertir_a_pdf(nombre_docx, nombre_pdf):
 def generar_pdf():
     try:
         data = request.json
+        print("==========================")
         print(">> Datos recibidos en /generar-pdf:", data)
+
         doc = DocxTemplate("templates/2_Solicitud_fecha_de_defensa_final.docx")
         contexto = {
             "fecha": data.get("fecha", ""),
@@ -66,28 +68,34 @@ def generar_pdf():
             "nombres_estudiantes": data.get("nombres_estudiantes", ""),
             "nombre_director": data.get("nombre_director", "")
         }
+        print(">> Contexto generado:", contexto)
+
         doc.render(contexto)
         doc_path = "documento.docx"
         pdf_path = "documento.pdf"
         doc.save(doc_path)
 
         convertir_a_pdf(doc_path, pdf_path)
+        print("✅ PDF generado correctamente")
+        print("==========================")
         return send_file(pdf_path, as_attachment=True)
 
     except Exception as e:
-        print("ERROR AL GENERAR PDF:", str(e))
+        print("❌ ERROR AL GENERAR PDF:", str(e))
         return f"Error: {e}", 500
 
 @app.route('/generar-perfil', methods=['POST'])
 def generar_perfil():
     try:
         data = request.json
+        print("==========================")
         print(">> Datos recibidos en /generar-perfil:", data)
-        doc = DocxTemplate("templates/Perfil_Trabajo_Titulacion.docx")
 
+        doc = DocxTemplate("templates/Perfil_Trabajo_Titulacion.docx")
         contexto = data.copy()
         contexto['ods'] = data.get('ods') or []
         contexto['bibliografia'] = data.get('bibliografia') or []
+        print(">> Contexto generado:", contexto)
 
         doc.render(contexto)
         doc_path = "perfil_trabajo.docx"
@@ -95,10 +103,12 @@ def generar_perfil():
         doc.save(doc_path)
 
         convertir_a_pdf(doc_path, pdf_path)
+        print("✅ PDF generado correctamente")
+        print("==========================")
         return send_file(pdf_path, as_attachment=True)
 
     except Exception as e:
-        print("ERROR AL GENERAR PERFIL:", str(e))
+        print("❌ ERROR AL GENERAR PERFIL:", str(e))
         return f"Error: {e}", 500
 
 if __name__ == '__main__':
