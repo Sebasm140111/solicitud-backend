@@ -64,7 +64,7 @@ def generar_pdf():
         contexto = {campo: data[campo] for campo in required}
         print("📦 Contexto para el DOCX:", contexto)
 
-        doc = DocxTemplate("solicitud-backend/templates/2_Solicitud_fecha_de_defensa_final.docx")
+        doc = DocxTemplate("templates/2_Solicitud_fecha_de_defensa_final.docx")
         doc.render(contexto)
         doc.save("documento.docx")
         print("📝 Documento .docx generado")
