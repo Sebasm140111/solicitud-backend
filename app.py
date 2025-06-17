@@ -81,6 +81,65 @@ def generar_pdf():
     except Exception as e:
         print("ERROR AL GENERAR PDF:", str(e))
         return f"Error: {e}", 500
+    
+@app.route('/generar-emprendimiento', methods=['POST'])
+def generar_emprendimiento():
+    try:
+        data = request.json
+        print("Datos recibidos en /generar-emprendimiento:", data)
+
+        doc = DocxTemplate("templates/Solicitud_TTitulacion_Emprendimiento_IT112b.docx")
+        doc.render(data)
+        doc_path = "emprendimiento.docx"
+        pdf_path = "emprendimiento.pdf"
+        doc.save(doc_path)
+
+        job = cloudconvert.Job.create(payload={
+            "tasks": {
+                "import-my-file": {
+                    "operation": "import/upload"
+                },
+                "convert-my-file": {
+                    "operation": "convert",
+                    "input": "import-my-file",
+                    "input_format": "docx",
+                    "output_format": "pdf",
+                    "engine": "libreoffice"
+                },
+                "export-my-file": {
+                    "operation": "export/url",
+                    "input": "convert-my-file"
+                }
+            }
+        })
+
+        upload_task = next((task for task in job['tasks'] if task['name'] == 'import-my-file'), None)
+        if not upload_task or 'result' not in upload_task:
+            raise Exception("No se pudo obtener el formulario de subida")
+
+        upload_url = upload_task['result']['form']['url']
+        upload_params = upload_task['result']['form']['parameters']
+
+        with open(doc_path, 'rb') as f:
+            requests.post(upload_url, data=upload_params, files={'file': f})
+
+        job = cloudconvert.Job.wait(id=job['id'])
+
+        export_task = next((task for task in job['tasks'] if task['name'] == 'export-my-file'), None)
+        if not export_task or 'result' not in export_task:
+            raise Exception("No se pudo obtener el archivo exportado")
+
+        file_url = export_task['result']['files'][0]['url']
+        response = requests.get(file_url)
+        with open(pdf_path, "wb") as f:
+            f.write(response.content)
+
+        print("✅ PDF de emprendimiento generado")
+        return send_file(pdf_path, as_attachment=True)
+
+    except Exception as e:
+        print("❌ ERROR en /generar-emprendimiento:", str(e))
+        return f"Error: {e}", 500
 
 
 if __name__ == '__main__':
