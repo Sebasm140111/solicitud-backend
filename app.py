@@ -64,7 +64,7 @@ def generar_pdf():
         contexto = {campo: data[campo] for campo in required}
         print("📦 Contexto para el DOCX:", contexto)
 
-        doc = DocxTemplate("templates/test_formato_simple.docx")
+        doc = DocxTemplate("templates/2_Solicitud_fecha_defensa_final.docx")
         doc.render(contexto)
         doc.save("documento.docx")
         print("📝 Documento .docx generado")
@@ -74,52 +74,6 @@ def generar_pdf():
 
     except Exception as e:
         print("❌ ERROR en /generar-pdf:", str(e))
-        return f"Error: {e}", 500
-
-@app.route('/generar-perfil', methods=['POST'])
-def generar_perfil():
-    try:
-        data = request.get_json()
-        print("📥 Datos recibidos en /generar-perfil:", data)
-
-        contexto = {
-            "facultad": data.get("facultad", ""),
-            "carrera": data.get("carrera", ""),
-            "periodo_academico": data.get("periodo_academico", ""),
-            "apellidos": data.get("apellidos", ""),
-            "nombres": data.get("nombres", ""),
-            "codigo_estudiante": data.get("codigo_estudiante", ""),
-            "cedula": data.get("cedula", ""),
-            "correo_electronico_institu": data.get("correo_electronico_institu", ""),
-            "apellidos_director": data.get("apellidos_director", ""),
-            "nombres_director": data.get("nombres_director", ""),
-            "cedula_director": data.get("cedula_director", ""),
-            "correo_director_institu": data.get("correo_director_institu", ""),
-            "opción_del_trabajo_de_titulacion": data.get("opcion", ""),
-            "modalidad": data.get("modalidad", ""),
-            "tema": data.get("tema", ""),
-            "objetivo_general": data.get("objetivo_general", ""),
-            "linea_de_investigacion": data.get("linea_de_investigacion", ""),
-            "programa": data.get("programa", ""),
-            "ods": data.get("ods", []),
-            "problema": data.get("problema", ""),
-            "metodo_de_metodologia": data.get("metodo_de_metodologia", ""),
-            "tecnica": data.get("tecnica", ""),
-            "instrumentos": data.get("instrumentos", ""),
-            "bibliografia": data.get("bibliografia", []),
-            "firma_estudiante": data.get("firma_estudiante", ""),
-            "firma_director": data.get("firma_director", "")
-        }
-
-        doc = DocxTemplate("templates/Perfil_Trabajo_Titulacion.docx")
-        doc.render(contexto)
-        doc.save("perfil_trabajo.docx")
-
-        convertir_a_pdf("perfil_trabajo.docx", "perfil_trabajo.pdf")
-        return send_file("perfil_trabajo.pdf", as_attachment=True)
-
-    except Exception as e:
-        print("❌ ERROR en /generar-perfil:", str(e))
         return f"Error: {e}", 500
 
 if __name__ == '__main__':
