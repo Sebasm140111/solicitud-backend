@@ -57,7 +57,10 @@ def convertir_a_pdf(nombre_docx, nombre_pdf):
 @app.route('/generar-pdf', methods=['POST'])
 def generar_pdf():
     try:
-        data = request.json
+        data = request.get_json()
+        if not data:
+            raise Exception("❌ No se recibió un JSON válido en la solicitud.")
+
         print("==========================")
         print(">> Datos recibidos en /generar-pdf:", data)
 
@@ -87,7 +90,10 @@ def generar_pdf():
 @app.route('/generar-perfil', methods=['POST'])
 def generar_perfil():
     try:
-        data = request.json
+        data = request.get_json()
+        if not data:
+            raise Exception("❌ No se recibió un JSON válido en la solicitud.")
+
         print("==========================")
         print(">> Datos recibidos en /generar-perfil:", data)
 
