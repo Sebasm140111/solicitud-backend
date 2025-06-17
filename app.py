@@ -152,7 +152,7 @@ def generar_examen_complexivo():
 
         contexto = {
             "fecha": data.get("fecha", ""),
-            "Nombre_Completo_Ingeniero": data.get("Nombre_Completo_Ingeniero", ""),
+            "nombre_completo_ingeniero": data.get("nombre_completo_ingeniero", ""),
             "carrera": data.get("carrera", ""),
             "codigo": data.get("codigo", ""),
             "nombre_completo_estudiante": data.get("nombre_completo_estudiante", ""),
@@ -160,7 +160,7 @@ def generar_examen_complexivo():
             "correo_institucional": data.get("correo_institucional", ""),
             "version": data.get("version", "1"),
             "actualizado_si_existe": data.get("actualizado_si_existe", ""),
-            "fecha_actualizacion_si_existe": data.get("fecha_actualizacion_si_existe", ""),
+            "fecha_actualizacion": data.get("fecha_actualizacion", ""),
         }
 
         doc.render(contexto)
