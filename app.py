@@ -6,7 +6,7 @@ import requests
 import base64
 
 app = Flask(__name__)
-cloudconvert.configure(api_key=os.environ.get('CLOUDCONVERT_API_KEY'))  # Recomendado usar variable de entorno
+cloudconvert.configure(api_key=os.environ.get('CLOUDCONVERT_API_KEY'))
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPO = "Sebasm140111/solicitud-backend"
@@ -60,6 +60,104 @@ def generar_pdf():
             f.write(response.content)
 
         return send_file("documento.pdf", as_attachment=True)
+
+    except Exception as e:
+        return f"Error: {e}", 500
+
+@app.route('/generar-emprendimiento', methods=['POST'])
+def generar_emprendimiento():
+    try:
+        data = request.json
+        doc = DocxTemplate("templates/Solicitud_TTitulacion_Emprendimiento_IT112b.docx")
+        doc.render(data)
+        doc_path = "emprendimiento.docx"
+        doc.save(doc_path)
+
+        job = cloudconvert.Job.create(payload={
+            "tasks": {
+                "import-my-file": {"operation": "import/upload"},
+                "convert-my-file": {
+                    "operation": "convert",
+                    "input": "import-my-file",
+                    "input_format": "docx",
+                    "output_format": "pdf",
+                    "engine": "libreoffice"
+                },
+                "export-my-file": {"operation": "export/url", "input": "convert-my-file"}
+            }
+        })
+
+        upload_task = next((t for t in job['tasks'] if t['name'] == 'import-my-file'), None)
+        upload_url = upload_task['result']['form']['url']
+        upload_params = upload_task['result']['form']['parameters']
+
+        with open(doc_path, 'rb') as f:
+            requests.post(upload_url, data=upload_params, files={'file': f})
+
+        job = cloudconvert.Job.wait(id=job['id'])
+        export_task = next((t for t in job['tasks'] if t['name'] == 'export-my-file'), None)
+        file_url = export_task['result']['files'][0]['url']
+
+        response = requests.get(file_url)
+        with open("emprendimiento.pdf", "wb") as f:
+            f.write(response.content)
+
+        return send_file("emprendimiento.pdf", as_attachment=True)
+
+    except Exception as e:
+        return f"Error: {e}", 500
+
+@app.route('/generar-examen-complexivo', methods=['POST'])
+def generar_examen_complexivo():
+    try:
+        data = request.json
+        doc = DocxTemplate("templates/Solicitud_ExamenComplexivoIT112a.docx")
+        contexto = {
+            "fecha": data.get("fecha", ""),
+            "nombre_completo_ingeniero": data.get("nombre_completo_ingeniero", ""),
+            "carrera": data.get("carrera", ""),
+            "codigo": data.get("codigo", ""),
+            "nombre_completo_estudiante": data.get("nombre_completo_estudiante", ""),
+            "cedula": data.get("cedula", ""),
+            "correo_institucional": data.get("correo_institucional", ""),
+            "version": data.get("version", "1"),
+            "actualizado_si_existe": data.get("actualizado_si_existe", ""),
+            "fecha_actualizacion": data.get("fecha_actualizacion", ""),
+        }
+        doc.render(contexto)
+        doc_path = "complexivo.docx"
+        doc.save(doc_path)
+
+        job = cloudconvert.Job.create(payload={
+            "tasks": {
+                "import-my-file": {"operation": "import/upload"},
+                "convert-my-file": {
+                    "operation": "convert",
+                    "input": "import-my-file",
+                    "input_format": "docx",
+                    "output_format": "pdf",
+                    "engine": "libreoffice"
+                },
+                "export-my-file": {"operation": "export/url", "input": "convert-my-file"}
+            }
+        })
+
+        upload_task = next((t for t in job['tasks'] if t['name'] == 'import-my-file'), None)
+        upload_url = upload_task['result']['form']['url']
+        upload_params = upload_task['result']['form']['parameters']
+
+        with open(doc_path, 'rb') as f:
+            requests.post(upload_url, data=upload_params, files={'file': f})
+
+        job = cloudconvert.Job.wait(id=job['id'])
+        export_task = next((t for t in job['tasks'] if t['name'] == 'export-my-file'), None)
+        file_url = export_task['result']['files'][0]['url']
+
+        response = requests.get(file_url)
+        with open("complexivo.pdf", "wb") as f:
+            f.write(response.content)
+
+        return send_file("complexivo.pdf", as_attachment=True)
 
     except Exception as e:
         return f"Error: {e}", 500
