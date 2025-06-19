@@ -175,12 +175,18 @@ def subir_docx_github():
         contenido_base64 = base64.b64encode(contenido_binario).decode('utf-8')
         ruta_completa = f"templates/{nombre_archivo}"
 
+        # Obtener SHA actual del archivo
         sha_res = requests.get(
             f"https://api.github.com/repos/{GITHUB_REPO}/contents/{ruta_completa}",
             headers={"Authorization": f"Bearer {GITHUB_TOKEN}"}
         )
+
+        print(f"[INFO] GitHub SHA response status: {sha_res.status_code}")
+        print(f"[INFO] GitHub SHA response body: {sha_res.text}")
+
         sha = sha_res.json().get("sha") if sha_res.status_code == 200 else None
 
+        # Subir el nuevo archivo
         response = requests.put(
             f"https://api.github.com/repos/{GITHUB_REPO}/contents/{ruta_completa}",
             headers={
@@ -194,13 +200,23 @@ def subir_docx_github():
             }
         )
 
+        print(f"[INFO] GitHub PUT status: {response.status_code}")
+        print(f"[INFO] GitHub PUT response body: {response.text}")
+
         if response.status_code in [200, 201]:
             return {"mensaje": f"✅ Archivo {nombre_archivo} actualizado correctamente en GitHub"}
         else:
-            return {"error": "❌ Error al subir", "detalle": response.json()}, 500
+            return {
+                "error": "❌ Error al subir",
+                "status_code": response.status_code,
+                "respuesta": response.json()
+            }, 500
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {"error": str(e)}, 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
