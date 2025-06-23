@@ -120,6 +120,42 @@ def generar_examen_complexivo():
         return error, 500
     return send_file(pdf_path, as_attachment=True)
 
+@app.route('/generar-perfil-titulacion', methods=['POST'])
+def generar_perfil_titulacion():
+    data = request.json
+    contexto = {
+        "facultad": data.get("facultad", ""),
+        "carrera": data.get("carrera", ""),
+        "periodo_academico": data.get("periodo_academico", ""),
+        "apellidos": data.get("apellidos", ""),
+        "nombres": data.get("nombres", ""),
+        "codigo_estudiante": data.get("codigo_estudiante", ""),
+        "cedula": data.get("cedula", ""),
+        "correo_electronico_institu": data.get("correo_electronico_institu", ""),
+        "apellidos_director": data.get("apellidos_director", ""),
+        "nombres_director": data.get("nombres_director", ""),
+        "cedula_director": data.get("cedula_director", ""),
+        "correo_director_institu": data.get("correo_director_institu", ""),
+        "opción_del_trabajo_de_titulacion": data.get("opcion", ""),
+        "modalidad": data.get("modalidad", ""),
+        "tema": data.get("tema", ""),
+        "objetivo_general": data.get("objetivo_general", ""),
+        "linea_de_investigacion": data.get("linea_de_investigacion", ""),
+        "programa": data.get("programa", ""),
+        "ods": data.get("ods", []),
+        "problema": data.get("problema", ""),
+        "metodo_de_metodologia": data.get("metodo", ""),
+        "tecnica": data.get("tecnica", ""),
+        "instrumentos": data.get("instrumentos", ""),
+        "bibliografia": data.get("bibliografia", []),
+        "firma_estudiante": data.get("firma_estudiante", ""),
+        "firma_director": data.get("firma_director", "")
+    }
+    pdf_path, error = generar_pdf_cloudconvert("templates/Perfil_Trabajo_Titulacion.docx", "perfil_titulacion.pdf", contexto)
+    if error:
+        return error, 500
+    return send_file(pdf_path, as_attachment=True)
+
 
 @app.route('/subir-docx-github', methods=['POST'])
 def subir_docx_github():
