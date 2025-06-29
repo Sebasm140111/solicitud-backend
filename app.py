@@ -25,9 +25,9 @@ def generar_pdf_pdfco(nombre_docx, nombre_pdf, contexto):
             encoded_file = base64.b64encode(file.read()).decode()
 
         response = requests.post(
-            "https://api.pdf.co/v1/pdf/convert/to/docx",
+            "https://api.pdf.co/v1/pdf/convert/from/url",
             headers={"x-api-key": PDFCO_API_KEY},
-            json={"name": nombre_pdf, "file": encoded_file}
+            json={"url": f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{doc_path}", "name": nombre_pdf}
         )
 
         if response.status_code != 200:
