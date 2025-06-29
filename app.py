@@ -25,7 +25,7 @@ def generar_pdf_pdfco(nombre_docx, nombre_pdf, contexto):
             encoded_file = base64.b64encode(file.read()).decode()
 
         response = requests.post(
-            "https://api.pdf.co/v1/pdf/convert/from/docx",
+            "https://api.pdf.co/v1/pdf/convert/to/docx",
             headers={"x-api-key": PDFCO_API_KEY},
             json={"name": nombre_pdf, "file": encoded_file}
         )
